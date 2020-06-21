@@ -7,6 +7,8 @@
 from pdb import set_trace as dbg  # Utiliser dbg() pour faire un break dans votre code.
 
 import numpy as np
+import random
+import sudoku
 
 #####
 # reviser: Fonction utilisée par AC3 afin de réduire le domaine de Xi en fonction des contraintes de Xj.
@@ -69,19 +71,11 @@ def AC3(csp):
 # retour: Un booléean indiquant si l'affectation de la valeur v à la case X est légale.
 ###
 def est_compatible(X, v, assignations, csp):
-    # TODO: .~= À COMPLÉTER =~.
-    count = 0
-
-    # for each of the cells that can be in conflict with cell
-    #for related_c in sudoku.related_cells[cell]:
-
-        # if the value of related_c is not found yet AND the value we look for exists in its possibilities
-        #if len(sudoku.possibilities[related_c]) > 1 and value in sudoku.possibilities[related_c]:
-            # then a conflict exists
-            #count += 1
-
-    #return count
-    return True
+    choice = random.randrange(0,1)
+    if choice is 0:
+        return False
+    else:
+        return True
 
 
 #####
@@ -97,10 +91,21 @@ def est_compatible(X, v, assignations, csp):
 # retour: Le dictionnaire des assignations (case => valeur)
 ###
 def backtrack(assignations, csp):
-    # TODO: .~= À COMPLÉTER =~.
-
-    return assignations
-
+    if not csp.variables:
+        return assignations
+    x = csp.variables
+    for v in x:
+        if est_compatible(x,v,assignations,csp):
+            assignations[x] = v
+            cspCopy = csp.copy()
+            cspCopy = v
+            cspCopy, ok = inference(x, csp)
+            if ok:
+                result = backtrack(assignations, cspCopy)
+                if result is not False:
+                    return result
+            assignations.pop(x)
+    return False
 
 #####
 # backtracking_search : Fonction coquille pour la fonction 'backtrack'.
@@ -114,4 +119,12 @@ def backtrack(assignations, csp):
 # retour: Le dictionnaire des assignations (case => valeur)
 ###
 def backtracking_search(csp):
-    return backtrack({}, csp)
+    final_result = backtrack({}, csp)
+    return final_result
+
+def inference(x,csp):
+    for xk in csp.arcs():
+        change,csp = reviser(xk, x, csp)
+        if change and not csp.domaines:
+            return None, False
+        return csp, True
